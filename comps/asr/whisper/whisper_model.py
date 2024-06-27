@@ -80,13 +80,28 @@ class WhisperModel:
             audio_dataset = Dataset.from_dict({"audio": [audio_path]}).cast_column("audio", Audio(sampling_rate=16000))
             waveform = audio_dataset[0]["audio"]["array"]
 
+        result = ""
+        start = 0
+        delta = 100000
+        while(start < waveform.size):
+            end = start + delta
+            if(end > waveform.size):
+                end = waveform.size
+            inputs = self.processor.feature_extractor(
+                waveform[start:end], return_tensors="pt", sampling_rate=16_000
+            ).input_features.to(self.device)
+            predicted_ids = self.model.generate(inputs, language=self.language)
+            short_result = self.processor.tokenizer.batch_decode(predicted_ids, skip_special_tokens=True, normalize=True)[0]
+            result = result + " " + short_result
+            start = start + delta
         # pylint: disable=E1101
-        inputs = self.processor.feature_extractor(
-            waveform, return_tensors="pt", sampling_rate=16_000
-        ).input_features.to(self.device)
-        predicted_ids = self.model.generate(inputs, language=self.language)
+        #inputs = self.processor.feature_extractor(
+        #    waveform, return_tensors="pt", sampling_rate=16_000
+        #).input_features.to(self.device)
+
+        #predicted_ids = self.model.generate(inputs, language=self.language)
         # pylint: disable=E1101
-        result = self.processor.tokenizer.batch_decode(predicted_ids, skip_special_tokens=True, normalize=True)[0]
+        #result = self.processor.tokenizer.batch_decode(predicted_ids, skip_special_tokens=True, normalize=True)[0]
         if self.language in ["chinese", "mandarin"]:
             from zhconv import convert
 
