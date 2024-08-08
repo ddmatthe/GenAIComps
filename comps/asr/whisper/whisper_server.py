@@ -8,7 +8,8 @@ import uuid
 
 import uvicorn
 from fastapi import FastAPI, Request
-from fastapi.responses import Response
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse, Response
 from pydub import AudioSegment
 from starlette.middleware.cors import CORSMiddleware
 from whisper_model import WhisperModel
@@ -47,8 +48,10 @@ async def audio_to_text(request: Request):
         asr_result = e
     finally:
         os.remove(file_name)
-    return {"asr_result": asr_result}
-
+        result = {}
+        result["asr_result"] = asr_result
+        response_data_json = jsonable_encoder(result)
+        return JSONResponse(content=response_data_json)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
