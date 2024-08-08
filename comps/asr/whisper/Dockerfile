@@ -15,7 +15,6 @@ COPY comps /home/comps
 
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r /home/comps/asr/requirements.txt && \
-    pip install uvicorn
 
 ENV PYTHONPATH=$PYTHONPATH:/home
 
